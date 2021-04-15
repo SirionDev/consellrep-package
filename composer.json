@@ -2,7 +2,8 @@
     "name": "siriondev/consellrep",
     "description": "Composer package per a la integració amb el procés de validació de la Identitat Digital Republicana del Consell per la República Catalana",
     "require": {
-        "laravel/framework": "^8.0"
+        "laravel/framework": "^8.0",
+        "guzzlehttp/guzzle": "^7.3"
     },
     "license": "GPL-3.0",
     "minimum-stability": "stable",
@@ -17,11 +18,20 @@
             "Siriondev\\ConsellRepublica\\": "src/"
         }
     },
+    "autoload-dev": {
+        "psr-4": {
+            "Tests\\": "tests/"
+        }
+    },
     "extra": {
         "laravel": {
             "providers": [
                 "Siriondev\\ConsellRepublica\\Providers\\ConsellRepublicaProvider"
             ]
         }
+    },
+    "require-dev": {
+        "phpunit/phpunit": "^9.5",
+        "orchestra/testbench": "^6.17"
     }
 }
