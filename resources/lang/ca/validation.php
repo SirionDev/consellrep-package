@@ -14,4 +14,7 @@ return [
     */
 
     'idrepublicana' => 'La Identitat Digital Republicana no és vàlida.',
+    'bad_format' => 'El format de la ID Republicana no és correcte.'
+    'missing_config' => 'No s\'han trobat els valors de la configuració.',
+    'bad_request' => 'Alguna cosa no ha anat bé. Torna-ho a intentar més tard.',
 ];

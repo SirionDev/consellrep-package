@@ -2,7 +2,7 @@
 
 namespace Siriondev\ConsellRepublica\Exceptions;
 
-class IdentitatDigitalRepublicanaException extends \Exception
+class IDRFormatException extends \Exception
 {
     //
 }

@@ -6,6 +6,7 @@ use Illuminate\Container\Container;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Validator;
 use Siriondev\ConsellRepublica\Exceptions\ConfigException;
+use Siriondev\ConsellRepublica\Exceptions\IDRFormatException;
 
 class IdentitatDigitalRepublicana
 {
@@ -23,7 +24,11 @@ class IdentitatDigitalRepublicana
 
         if (empty($validation_path) || empty($validation_param))
 
-            throw new ConfigException(trans('consellrep::idrep.missing_config'), 1);
+            throw new ConfigException(trans('consellrep::validation.missing_config'), 1);
+
+        if (!preg_match("/[A-Za-z]{1}\-[0-9]{3}\-[0-9]{5}/", $idr))
+
+            throw new IDRFormatException(trans('consellrep::validation.bad_format'), 1);
 
         try {
 
@@ -37,7 +42,7 @@ class IdentitatDigitalRepublicana
 
         } catch (\Throwable $e) {
 
-            throw new \Exception(trans('consellrep::idrep.bad_request'), 1);
+            throw new \Exception(trans('consellrep::validation.bad_request'), 1);
 
         }
     }
