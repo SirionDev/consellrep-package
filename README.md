@@ -1,4 +1,4 @@
-# Package - Identitat Digital Republiana
+# Package - Identitat Digital Republicana
 
 ## Installation
 
