@@ -2,10 +2,7 @@
 
 namespace Siriondev\ConsellRepublica;
 
-use Illuminate\Container\Container;
 use Illuminate\Support\Facades\Http;
-use Illuminate\Support\Facades\Validator;
-use Siriondev\ConsellRepublica\Exceptions\ConfigException;
 
 class IdentitatDigitalRepublicana
 {
@@ -15,30 +12,41 @@ class IdentitatDigitalRepublicana
      * @param string $idr
      * @return bool
      */
-    public function validate(string $idr): bool
+    public function validate(string $idr): IDRValidator
     {
+        $idr_validator = new IDRValidator($idr);
+
         $validation_path = config('cxr.validation.url');
 
         $validation_param = config('cxr.validation.param');
 
-        if (empty($validation_path) || empty($validation_param))
+        if (empty($validation_path) || empty($validation_param)) {
 
-            throw new ConfigException(trans('consellrep::idrep.missing_config'), 1);
+            $idr_validator->setMessage(trans('consellrep::validation.missing_config'));
 
-        try {
+        } elseif (!$idr_validator->isFormat()) {
 
-            $response = Http::get($validation_path, [
+            $idr_validator->setMessage(trans('consellrep::validation.idrepublicana.format'));
 
-                $validation_param => $idr
+        } else {
 
-            ]);
+            try {
 
-            return isset($response['state']) && $response['state'] == 'VALID_ACTIVE';
+                $response = Http::get($validation_path, [
 
-        } catch (\Throwable $e) {
+                    $validation_param => $idr
 
-            throw new \Exception(trans('consellrep::idrep.bad_request'), 1);
+                ]);
 
+                $idr_validator->parse($response);
+
+            } catch (\Throwable $e) {
+
+                $idr_validator->setMessage(trans('consellrep::validation.bad_request'));
+
+            }
         }
+
+        return $idr_validator;
     }
 }
