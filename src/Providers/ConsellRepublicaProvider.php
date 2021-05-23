@@ -2,11 +2,10 @@
 
 namespace Siriondev\ConsellRepublica\Providers;
 
+use Illuminate\Support\Str;
 use Illuminate\Support\ServiceProvider;
 use Illuminate\Support\Facades\Validator;
-use Illuminate\Contracts\Debug\ExceptionHandler;
 use Siriondev\ConsellRepublica\IdentitatDigitalRepublicana;
-use Siriondev\ConsellRepublica\Exceptions\ConsellRepublicaExceptionHandler;
 use Siriondev\ConsellRepublica\Facades\IdentitatDigitalRepublicana as IdentitatDigitalRepublicanaFacade;
 
 class ConsellRepublicaProvider extends ServiceProvider
@@ -21,7 +20,7 @@ class ConsellRepublicaProvider extends ServiceProvider
         $this->app->bind('IdentitatDigitalRepublicana', function() {
 
             return new IdentitatDigitalRepublicana();
-            
+
         });
     }
 
@@ -73,10 +72,52 @@ class ConsellRepublicaProvider extends ServiceProvider
      */
     protected function registerValidators()
     {
-        Validator::extend('idrepublicana', function($attribute, $value, $parameters) {
+        Validator::extend('idrepublicana', function($attribute, $value, $parameters, $validator) {
 
-            return IdentitatDigitalRepublicanaFacade::validate($value);
+            $valid = true;
 
-        }, trans('consellrep::validation.idrepublicana'));
+            $error = "";
+
+            $idr_validator = IdentitatDigitalRepublicanaFacade::validate($value);
+
+            if (empty($parameters))
+
+                return $idr_validator->isValid() && $idr_validator->isActive() && $idr_validator->isFormat();
+
+            foreach ($parameters as $parameter) {
+
+                $parameter = preg_replace( '/[\W]/', '', $parameter);
+
+                $method = 'is' . Str::ucfirst($parameter);
+
+                if (is_callable(array($idr_validator, $method))) {
+
+                    if (!$idr_validator->$method()) {
+
+                        $valid = false;
+
+                        $error = trans('consellrep::validation.idrepublicana.' . $parameter);
+
+                        break;
+                    }
+
+                } else {
+
+                    $valid = false;
+
+                    $error = trans('consellrep::validation.idrepublicana.invalid_rule', ['rule' => $parameter]);
+
+                    break;
+                }
+            }
+
+            $validator->addReplacer('idrepublicana', function($message, $attribute, $rule, $parameters) use ($error) {
+
+                return $error;
+
+            });
+
+            return $valid;
+        });
     }
 }

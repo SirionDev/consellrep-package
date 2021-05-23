@@ -31,4 +31,16 @@ class ConsellRepublicaTestCase extends TestCase
 
         $app['config']->set('cxr.validation.param', 'idCiutada');
     }
+
+    /**
+     * Setup the test environment.
+     */
+    protected function setUp(): void
+    {
+        parent::setUp();
+
+        $this->idr = 'C-999-99999';
+
+        $this->invalid_idr = 'invalid_idr';
+    }
 }

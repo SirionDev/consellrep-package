@@ -2,11 +2,7 @@
 
 namespace Siriondev\ConsellRepublica;
 
-use Illuminate\Container\Container;
 use Illuminate\Support\Facades\Http;
-use Illuminate\Support\Facades\Validator;
-use Siriondev\ConsellRepublica\Exceptions\ConfigException;
-use Siriondev\ConsellRepublica\Exceptions\IDRFormatException;
 
 class IdentitatDigitalRepublicana
 {
@@ -16,34 +12,41 @@ class IdentitatDigitalRepublicana
      * @param string $idr
      * @return bool
      */
-    public function validate(string $idr): bool
+    public function validate(string $idr): IDRValidator
     {
+        $idr_validator = new IDRValidator($idr);
+
         $validation_path = config('cxr.validation.url');
 
         $validation_param = config('cxr.validation.param');
 
-        if (empty($validation_path) || empty($validation_param))
+        if (empty($validation_path) || empty($validation_param)) {
 
-            throw new ConfigException(trans('consellrep::validation.missing_config'), 1);
+            $idr_validator->setMessage(trans('consellrep::validation.missing_config'));
 
-        if (!preg_match("/[A-Za-z]{1}\-[0-9]{3}\-[0-9]{5}/", $idr))
+        } elseif (!$idr_validator->isFormat()) {
 
-            throw new IDRFormatException(trans('consellrep::validation.bad_format'), 1);
+            $idr_validator->setMessage(trans('consellrep::validation.idrepublicana.format'));
 
-        try {
+        } else {
 
-            $response = Http::get($validation_path, [
+            try {
 
-                $validation_param => $idr
+                $response = Http::get($validation_path, [
 
-            ]);
+                    $validation_param => $idr
 
-            return isset($response['state']) && $response['state'] == 'VALID_ACTIVE';
+                ]);
 
-        } catch (\Throwable $e) {
+                $idr_validator->parse($response);
 
-            throw new \Exception(trans('consellrep::validation.bad_request'), 1);
+            } catch (\Throwable $e) {
 
+                $idr_validator->setMessage(trans('consellrep::validation.bad_request'));
+
+            }
         }
+
+        return $idr_validator;
     }
 }
